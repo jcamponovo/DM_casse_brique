@@ -1,0 +1,275 @@
+import pyxel, random
+from tkinter import *
+from random import randrange
+from math import *
+
+# taille de la fenetre 128x128 pixels
+# ne pas modifier
+fenetre= pyxel.init(300, 300, title="Casse_Brique Baptiste")
+YMAX=300
+XMAX=300
+xbar=150
+ybar=275
+# position initiale du vaisseau
+# (origine des positions : coin haut gauche)
+flag= 0
+vaisseau_x = 125
+vaisseau_y = 250
+color=5
+colorb = 10
+score= 0
+cox = 50
+coy = 100
+r=4
+x= vaisseau_x + 20
+y= vaisseau_y - (r+1)
+balle = False
+vb = 5
+xx=-vb
+yy=-vb
+velocity = 5
+Can1 = Canvas(fenetre, bg='white')
+Can1.pack()
+# Création de la liste
+liste_brique_graphique = []
+liste_brique_etat = [True]*len(liste_brique_graphique)
+coord_x = []
+coord_y = []
+# initialisation des ennemis
+
+def start(event):
+    global flag
+    flag = flag + 1
+    if flag == 1:
+        deplacement_balle()
+    "démarrer"
+ 
+def stop(event):
+    "arret de l'animation"
+    global flag
+    flag = 0
+ 
+# Pour quitter le programme
+def Quitter(event):
+    fenetre.destroy()
+ 
+ 
+def Clavier(event):
+    global xbar, ybar
+    touche = event.keysym
+ 
+    if touche == 'Left':
+        xbar = xbar - 30
+ 
+    if touche == 'Right':
+        xbar = xbar + 30
+ 
+    if touche == 'Escape':
+        fenetre.destroy
+ 
+    Can1.coords(raquette, xbar - 50, ybar - 8, xbar + 50, ybar + 8)
+
+def vaisseau_deplacement(x, y):
+    """déplacement avec les touches de directions"""
+
+    if pyxel.btn(pyxel.KEY_RIGHT):
+        if (x < 195) :
+            x = x + velocity
+    if pyxel.btn(pyxel.KEY_LEFT):
+        if (x > 55) :
+            x = x - velocity
+
+    return x, y
+
+
+
+def balle_deplacement():
+    global x, y, xx, yy, vies, balle , score, liste_brique_graphique, liste_brique_etat, Can1
+    x += xx
+    y += yy
+    
+    # Bord gauche
+    if x <= r:
+        xx = -xx
+    # Plafond
+    elif y <= r :
+        yy = -yy
+    # bord droit
+    elif x >= 300-r :
+        xx = -xx
+    # dessus raquette
+    elif y >= vaisseau_y-r and y <= vaisseau_y+r and x >= vaisseau_x-r and x <= vaisseau_x+50+r :
+        yy = -yy
+        score+=10
+    # raquette gauche
+    elif x >= vaisseau_x-50-r and x <= vaisseau_x+r and y >= vaisseau_y - r and y <= vaisseau_y + 20 - r and pyxel.pget(x+xx, y+yy) == 2 :
+        yy = -yy
+        score+=20
+    # raquette droite
+    elif x >= vaisseau_x+50-r and x <= vaisseau_x+100+r and y >= vaisseau_y - r and y <= vaisseau_y + 20 - r and pyxel.pget(x+xx, y+yy) == 2 :
+        yy = -yy
+        score+=30
+    # bas
+    elif y >= 300+r :
+        balle=False
+        xx=-vb
+        yy=-vb
+        vies = vies-1
+        pyxel.text(vaisseau_x,vaisseau_y+10, 'Une vie de moins !', 7)
+    # brique 
+    elif pyxel.pget(x+xx, y+yy) == 10 :
+            pyxel.fill(x+xx, y+yy, 9 )
+            yy = -yy
+    elif pyxel.pget(x+xx, y+yy) == 9 :
+            pyxel.fill(x+xx, y+yy, 8 )
+            yy = -yy
+    elif pyxel.pget(x+xx, y+yy) == 8 :
+            pyxel.fill(x+xx, y+yy, 0 )
+            yy = -yy
+            score += 20
+    for i in range(len(liste_brique_graphique)):
+            if (y == coord_y[i]):
+                if (liste_brique_etat[i] == True):
+                # la balle repart
+                    y = -y
+ 
+                # On supprime la brique i graphiquement
+                    Can1.delete(fenetre, liste_brique_graphique[i])
+ 
+                # On supprime la brique i graphiquement
+                    liste_brique_etat[i] = False        
+   
+Balle = balle_deplacement()
+# Définition du boutton "Start"
+Button(fenetre, text='Démarrer', command=Balle).pack(side=LEFT, padx=15, pady=10)
+Can1.bind("<Return>", start)
+# Définition du boutton "Quitter"
+Button(fenetre, text='Quitter', command=fenetre.destroy).pack(side=RIGHT, padx=15, pady=10)
+Can1.bind("<Escape>", Quitter)
+# Cliquer sur p pour mettre en pause
+Can1.bind("<p>", stop)
+# vies et score
+vies = 3
+score= 0
+   
+   
+   
+def brique_creation(liste_brique_graphique):
+    for y in range(50, 110, 20):
+        for x in range (50, 500, 50):
+        #On crée un objet brique
+            brick_rect = Can1.create_rectangle(x, y, x+50, y+20, fill='green')
+ 
+            coord_x.append(x);
+            coord_y.append(y);
+ 
+        # On ajoute la brique graphique dans la liste
+            liste_brique_graphique.append(brick_rect)
+ 
+        # On ajoute l'état de la brique dans la liste
+        # True = brique est présente
+        # False = brique est détruite
+            liste_brique_etat.append(True)
+ 
+nb_brique=0
+ 
+for i in range(len(liste_brique_etat)):
+    if(liste_brique_etat[i]==True):
+        nb_brique=nb_brique+1
+        if (nb_brique==0):
+            Can1.create_text(250,250,text="PERDU  :(",fill='black')
+    print(nb_brique)
+ 
+        
+        
+def brique_creation(ennemis_liste):
+    pass
+    """création aléatoire des ennemis"""
+
+    # un ennemi par seconde
+    for i in rang :
+        for a in placement :
+            ennemis_liste.append([random.randint(40, 221), 10+i])
+    return ennemis_liste
+
+
+
+
+
+def brique_suppression():
+    """disparition d'un ennemi et d'un tir si contact"""
+
+    #for ennemi in ennemis_liste:
+        #for tir in tirs_liste:
+            #if ennemi[0] <= tir[0]+1 and ennemi[0]+8 >= tir[0] and ennemi[1]+8 >= tir[1]:
+                #ennemis_liste.remove(ennemi)
+                
+
+# =========================================================
+# == UPDATE
+# =========================================================
+def update():
+    """mise à jour des variables (30 fois par seconde)"""
+
+    global vaisseau_x, vaisseau_y, x, y, balle, liste_brique_graphique, vies, liste_brique_etat, Can1
+
+    # mise à jour de la position du vaisseau
+    vaisseau_x, vaisseau_y = vaisseau_deplacement(vaisseau_x, vaisseau_y)
+    
+    if pyxel.btnr(pyxel.KEY_SPACE):
+        balle = True
+
+    if balle is False:
+        x = vaisseau_x + 25
+        y = vaisseau_y - (r+1)
+    else:
+        balle_deplacement()
+
+    # creation des ennemis
+    brique_creation = brique_creation(liste_brique_graphique)
+
+
+    # suppression des ennemis et tirs si contact
+    brique_suppression()
+
+    # suppression du vaisseau et ennemi si contact
+    
+
+# =========================================================
+# == DRAW
+# =========================================================
+def draw():
+    """création des objets (30 fois par seconde)"""
+
+    # vide la fenetre
+    pyxel.cls(0)
+
+    # si le vaisseau possede des vies le jeu continue
+    if vies > 0:    
+        global cox, coy
+        # raquette
+        pyxel.rect(vaisseau_x, vaisseau_y, 50, 20, 2)
+        pyxel.tri(vaisseau_x, vaisseau_y, vaisseau_x, vaisseau_y+20, vaisseau_x-50,vaisseau_y+20,2) 
+        pyxel.tri(vaisseau_x+50, vaisseau_y, vaisseau_x+50, vaisseau_y+20, vaisseau_x+100,vaisseau_y+20,2) 
+        pyxel.rect(vaisseau_x-50, vaisseau_y+20, 150, 5, 2)
+
+        # tirs
+        pyxel.circ(x,y,r,color)
+        
+        pyxel.text(250,10, 'Score: %d' % score, 7)
+
+        pyxel.text(250,20, 'Vies: %d' % vies, 7)
+
+        # briques
+        #for brique in brique_liste:
+        cox=50
+        for u in range(8) :
+            pyxel.rect(cox,coy, 20, 10, colorb)
+            cox += 25
+            
+    # sinon: GAME OVER
+    else:
+
+        pyxel.text(50,64, 'GAME OVER', 7)
+
+pyxel.run(update, draw)
