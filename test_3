@@ -1,5 +1,4 @@
 import pyxel, random
-from tkinter import *
 from random import randrange
 from math import *
 
